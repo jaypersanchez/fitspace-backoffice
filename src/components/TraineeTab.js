@@ -4,6 +4,10 @@ import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper
 
 function TraineeTab() {
   const [users, setUsers] = useState([]);
+  const [selectedUserId, setSelectedUserId] = useState(null);
+  const [selectedUserName, setSelectedUserName] = useState('');
+  const [selectedWorkoutPlan, setSelectedWorkoutPlan] = useState([]);
+
 
   function formatDate(dateString) {
     const options = { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' };
@@ -17,7 +21,15 @@ function TraineeTab() {
       .catch(error => console.error('Error:', error));
   }, []);
 
+  const handleUserIdClick = (userId, workoutPlan) => {
+    setSelectedUserId(userId);
+    setSelectedUserName(selectedUserName);
+    setSelectedWorkoutPlan(workoutPlan);
+  };
+
+  
   return (
+    <div>
     <TableContainer component={Paper}>
       <Table sx={{ minWidth: 650 }} aria-label="simple table">
         <TableHead>
@@ -38,7 +50,11 @@ function TraineeTab() {
               key={user._id}
               sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
             >
-              <TableCell component="th" scope="row">
+              <TableCell component="th" scope="row"
+                style={{ cursor: 'pointer', '&:last-child td, &:last-child th': { border: 0 },
+                backgroundColor: user._id === selectedUserId ? 'lightblue' : 'inherit' }}
+                onClick={() => handleUserIdClick(user._id, user.workoutPlans)}
+              >
                 {user._id}
               </TableCell>
               <TableCell align="right">{user.name}</TableCell>
@@ -53,6 +69,28 @@ function TraineeTab() {
         </TableBody>
       </Table>
     </TableContainer>
+    {/* This is where you display the selected user's workout plan */}
+    {selectedUserId && (
+        <div>
+          <h3>Workout Plan for {selectedUserName} User ID: {selectedUserId}</h3>
+          {selectedWorkoutPlan.map((week, weekIndex) => (
+            <div key={weekIndex}>
+              <h4>Week {weekIndex + 1}</h4>
+              {week.days.map((day, dayIndex) => (
+                <div key={dayIndex}>
+                  <strong>Day {dayIndex + 1}:</strong>
+                  <ul>
+                    {day.exercises.map(exercise => (
+                      <li key={exercise._id.$oid}>{exercise.name}</li>
+                    ))}
+                  </ul>
+                </div>
+              ))}
+            </div>
+          ))}
+        </div>
+      )}
+    </div> 
   );
   
 }
