@@ -7,7 +7,12 @@ function TraineeTab() {
   const [selectedUserId, setSelectedUserId] = useState(null);
   const [selectedUserName, setSelectedUserName] = useState('');
   const [selectedWorkoutPlan, setSelectedWorkoutPlan] = useState([]);
+  const [currentEndpoint, setCurrentEndpoint] = useState('local');
 
+  const endpoints = {
+    local: 'http://localhost:3002/users/allusers',
+    remote: 'http://ec2-13-211-184-133.ap-southeast-2.compute.amazonaws.com:3002/users/allusers'
+  };
 
   function formatDate(dateString) {
     const options = { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' };
@@ -15,7 +20,17 @@ function TraineeTab() {
   }
 
   useEffect(() => {
-    fetch('http://localhost:3002/users/allusers')
+    const url = endpoints[currentEndpoint];
+    fetch(url)
+      .then(response => response.json())
+      .then(data => setUsers(data))
+      .catch(error => console.error('Error:', error));
+  }, [currentEndpoint]); // Add currentEndpoint as a dependency
+
+  
+  useEffect(() => {
+    const url = endpoints[currentEndpoint];
+    fetch(url)
       .then(response => response.json())
       .then(data => setUsers(data))
       .catch(error => console.error('Error:', error));
@@ -30,6 +45,10 @@ function TraineeTab() {
   
   return (
     <div>
+      <select value={currentEndpoint} onChange={(e) => setCurrentEndpoint(e.target.value)}>
+        <option value="local">Local Endpoint</option>
+        <option value="remote">Remote Endpoint</option>
+      </select>
     <TableContainer component={Paper}>
       <Table sx={{ minWidth: 650 }} aria-label="simple table">
         <TableHead>
